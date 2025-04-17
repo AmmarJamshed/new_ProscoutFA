@@ -3,81 +3,48 @@ import pandas as pd
 import altair as alt
 import numpy as np
 
+# Set up page configuration
 st.set_page_config(page_title="Football Analytics", layout="wide")
 
-# Static player data
+# Static player data (Updated with actual player names from Saudi clubs)
 @st.cache_data
 def load_static_player_data():
     np.random.seed(42)
-    positions = ["Forward", "Midfielder", "Defender"]
-    leagues = ["Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1"]
-    nationalities = ["Brazil", "France", "Germany", "Spain", "England", "Portugal", "Argentina", "Netherlands"]
-    future_year = 2026
-    top_clubs = ["Real Madrid", "Manchester City", "Barcelona", "Bayern Munich", "Arsenal", "PSG", "Inter Milan"]
+    # Real player names and their clubs
+    player_data = [
+        {"Player Name": "Cristiano Ronaldo", "Club": "Al Nassr", "Position": "Forward", "Nationality": "Portugal"},
+        {"Player Name": "Sadio Mané", "Club": "Al Nassr", "Position": "Forward", "Nationality": "Senegal"},
+        {"Player Name": "Roberto Firmino", "Club": "Al Ahli", "Position": "Forward", "Nationality": "Brazil"},
+        {"Player Name": "Riyad Mahrez", "Club": "Al Ahli", "Position": "Midfielder", "Nationality": "Algeria"},
+        {"Player Name": "Karim Benzema", "Club": "Al Ittihad", "Position": "Forward", "Nationality": "France"},
+        {"Player Name": "N'Golo Kanté", "Club": "Al Ittihad", "Position": "Midfielder", "Nationality": "France"},
+        {"Player Name": "Odion Ighalo", "Club": "Al Hilal", "Position": "Forward", "Nationality": "Nigeria"},
+        {"Player Name": "Luciano Vietto", "Club": "Al Hilal", "Position": "Midfielder", "Nationality": "Argentina"},
+        {"Player Name": "Cristiano Ronaldo", "Club": "Al Nassr", "Position": "Forward", "Nationality": "Portugal"},
+        {"Player Name": "Marcelo Brozović", "Club": "Al Nassr", "Position": "Midfielder", "Nationality": "Croatia"},
+        {"Player Name": "Matheus Pereira", "Club": "Al Hilal", "Position": "Midfielder", "Nationality": "Brazil"},
+    ]
 
-    data = []
-    for i in range(50):
-        name = f"Player {i+1}"
-        age = np.random.randint(19, 34)
-        nationality = np.random.choice(nationalities)
-        position = np.random.choice(positions)
-        league = np.random.choice(leagues)
-        club = f"Club {np.random.randint(1, 20)}"
-        xg = np.round(np.random.uniform(0, 10), 2)
-        assists = np.random.randint(0, 15)
-        dribbles = np.random.randint(0, 30)
-        tackles = np.random.randint(0, 15)
-        interceptions = np.random.randint(0, 10)
-        pass_acc = np.round(np.random.uniform(60, 95), 1)
-        prev_goals = np.random.randint(0, 15)
-        prev_assists = np.random.randint(0, 15)
-        market_value = np.round(np.random.uniform(10, 40), 2)
+    # Add the predicted values, transfer chance, and avatars
+    for player in player_data:
+        player["Predicted_Market_Value_2026"] = np.round(np.random.uniform(10, 40), 2)
+        player["Transfer_Chance (%)"] = np.random.randint(10, 95)
+        player["Best_Fit_Club"] = np.random.choice(["Al Nassr", "Al Hilal", "Al Ahli", "Al Ittihad"])
+        player["Market_Value_SAR"] = np.round(player["Predicted_Market_Value_2026"] * 3.75, 2)
 
-        # Prediction logic
-        predicted_value = np.round(market_value * np.random.uniform(1.1, 1.5), 2)
-        transfer_chance = np.random.randint(10, 95)
-
-        # Best fit club logic: based on performance metrics
-        performance_score = xg + assists + dribbles + (pass_acc / 10)
-        fit_index = int(performance_score % len(top_clubs))
-        best_fit_club = top_clubs[fit_index]
-
-        image = f"https://robohash.org/{name.replace(' ', '')}.png?set=set2"
-
-        data.append({
-            "Player Name": name,
-            "Age": age,
-            "Nationality": nationality,
-            "Position": position,
-            "League": league,
-            "Club": club,
-            "xG": xg,
-            "Assists": assists,
-            "Dribbles": dribbles,
-            "Tackles": tackles,
-            "Interceptions": interceptions,
-            "PassingAccuracy": pass_acc,
-            "Previous_Season_Goals": prev_goals,
-            "Previous_Season_Assists": prev_assists,
-            "Market_Value": market_value,
-            "Predicted_Market_Value_2026": predicted_value,
-            "Predicted_Year": future_year,
-            "Best_Fit_Club": best_fit_club,
-            "Transfer_Chance (%)": transfer_chance,
-            "Image": image,
-            "Market_Value_SAR": np.round(market_value * 3.75, 2),
-        })
-
-    return pd.DataFrame(data)
+        # Generate avatar (cartoon-style)
+        player["Image"] = f"https://robohash.org/{player['Player Name'].replace(' ', '')}.png?set=set2"
+    
+    return pd.DataFrame(player_data)
 
 # Load Data
 df = load_static_player_data()
 
 # Sidebar filters
 st.sidebar.header("Filter Players")
+clubs = st.sidebar.multiselect("Club", options=df["Club"].unique(), default=df["Club"].unique())
 positions = st.sidebar.multiselect("Position", options=df["Position"].unique(), default=df["Position"].unique())
-leagues = st.sidebar.multiselect("League", options=df["League"].unique(), default=df["League"].unique())
-filtered_df = df[(df["Position"].isin(positions)) & (df["League"].isin(leagues))]
+filtered_df = df[(df["Club"].isin(clubs)) & (df["Position"].isin(positions))]
 
 # Dashboard UI
 st.title("🌍 Football Player Analytics Dashboard")
@@ -141,7 +108,8 @@ for i, row in filtered_df.iterrows():
                 <div class="player-info">
                     <h3>{row['Player Name']}</h3>
                     <p><strong>Position:</strong> {row['Position']}</p>
-                    <p><strong>Age:</strong> {row['Age']} | <strong>Nationality:</strong> {row['Nationality']}</p>
+                    <p><strong>Nationality:</strong> {row['Nationality']}</p>
+                    <p><strong>Club:</strong> {row['Club']}</p>
                 </div>
                 <div class="player-stats">
                     <p><strong>Predicted Value:</strong> <span>${row['Predicted_Market_Value_2026']}M</span></p>
@@ -155,16 +123,16 @@ for i, row in filtered_df.iterrows():
 st.markdown("### ⚽ Key Stats")
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Players", len(filtered_df))
-col2.metric("Avg Market Value ($M)", f"{filtered_df['Market_Value'].mean():.2f}")
-col3.metric("Avg Passing Accuracy (%)", f"{filtered_df['PassingAccuracy'].mean():.1f}")
+col2.metric("Avg Market Value ($M)", f"{filtered_df['Predicted_Market_Value_2026'].mean():.2f}")
+col3.metric("Avg Transfer Chance (%)", f"{filtered_df['Transfer_Chance (%)'].mean():.1f}")
 
 # Scatter Plot
 st.markdown("### 📊 Performance Comparison")
 chart = alt.Chart(filtered_df).mark_circle(size=100).encode(
-    x='xG',
-    y='Assists',
-    color='Position',
-    tooltip=['Player Name', 'xG', 'Assists', 'Dribbles']
+    x='Predicted_Market_Value_2026',
+    y='Transfer_Chance (%)',
+    color='Club',
+    tooltip=['Player Name', 'Predicted_Market_Value_2026', 'Transfer_Chance (%)']
 ).interactive()
 st.altair_chart(chart, use_container_width=True)
 
@@ -175,7 +143,7 @@ bar_chart = alt.Chart(filtered_df).mark_bar().encode(
     y='Predicted_Market_Value_2026',
     color='Transfer_Chance (%)',
     tooltip=[
-        'Player Name', 'Market_Value', 'Predicted_Market_Value_2026',
+        'Player Name', 'Market_Value_SAR', 'Predicted_Market_Value_2026',
         'Transfer_Chance (%)', 'Best_Fit_Club'
     ]
 ).properties(height=400).interactive()
@@ -184,9 +152,7 @@ st.altair_chart(bar_chart, use_container_width=True)
 # Detailed Table
 st.markdown("### 📋 Player Details (2026 Predictions)")
 st.dataframe(filtered_df[[
-    'Player Name', 'Age', 'Nationality', 'Position', 'League', 'Club',
-    'xG', 'Assists', 'Dribbles', 'Tackles', 'Interceptions', 'PassingAccuracy',
-    'Previous_Season_Goals', 'Previous_Season_Assists',
-    'Market_Value', 'Predicted_Market_Value_2026', 'Predicted_Year',
-    'Best_Fit_Club', 'Transfer_Chance (%)', 'Market_Value_SAR'
+    'Player Name', 'Position', 'Club', 'Nationality', 
+    'Predicted_Market_Value_2026', 'Transfer_Chance (%)', 'Best_Fit_Club', 
+    'Market_Value_SAR'
 ]].reset_index(drop=True), use_container_width=True)
