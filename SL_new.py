@@ -52,7 +52,7 @@ def forecast_market_value(historical_data, years_to_predict=3):
 
 # Function to display player information and avatars
 def display_player(player):
-    st.image(player['avatar_url'], width=80, use_column_width=True)
+    st.image(player['avatar_url'], width=80, use_container_width=True)
     st.write(f"**{player['name']}** - {player['position']} - Age: {player['age']}")
     
     # Simulate historical data for the player
