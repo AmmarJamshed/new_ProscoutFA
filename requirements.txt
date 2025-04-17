@@ -1,7 +1,5 @@
 streamlit
 pandas
-requests
-beautifulsoup4
-Pillow
-opencv-python
 numpy
+scikit-learn
+matplotlib
