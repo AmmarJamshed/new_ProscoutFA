@@ -41,21 +41,41 @@ df['Predicted_Market_Value'] = df['Market_Value'] * random.uniform(1.05, 1.3)  #
 df['Transfer_Chance'] = df['Market_Value'].apply(lambda x: random.uniform(0.6, 0.9))  # Random transfer chance
 df['Best_Fit_Club'] = df['Club'].apply(lambda x: random.choice(['Barcelona', 'Manchester United', 'Paris Saint-Germain', 'Bayern Munich', 'Chelsea']))  # Random best-fit clubs
 
+# Market Value Prediction for the next three years
+growth_factor = 1.1  # 10% market value growth per year
+df['Predicted_Market_Value_Year_1'] = df['Predicted_Market_Value'] * growth_factor
+df['Predicted_Market_Value_Year_2'] = df['Predicted_Market_Value_Year_1'] * growth_factor
+df['Predicted_Market_Value_Year_3'] = df['Predicted_Market_Value_Year_2'] * growth_factor
+
 # Convert market value to SAR (for display in Saudi Arabia)
 df['Market_Value_SAR'] = df['Market_Value'] * 3.75
 df['Predicted_Market_Value_SAR'] = df['Predicted_Market_Value'] * 3.75
+df['Predicted_Market_Value_Year_1_SAR'] = df['Predicted_Market_Value_Year_1'] * 3.75
+df['Predicted_Market_Value_Year_2_SAR'] = df['Predicted_Market_Value_Year_2'] * 3.75
+df['Predicted_Market_Value_Year_3_SAR'] = df['Predicted_Market_Value_Year_3'] * 3.75
 
 # Displaying dashboard title and subtitle
 st.title("⚽ Football Player Analytics Dashboard")
 st.subheader("Explore player stats, predicted market values, transfer chances, and the best-fit clubs!")
 
-# Sidebar filters for position and club
-position_filter = st.sidebar.selectbox("Select Position", df['Position'].unique())
-filtered_df = df[df['Position'] == position_filter]
+# Sidebar filters for position, age, and budget
+position_filter = st.sidebar.selectbox("Select Position", ['All'] + list(df['Position'].unique()))
+age_filter = st.sidebar.slider("Select Age Range", min_value=18, max_value=40, value=(18, 40))
+budget_filter = st.sidebar.slider("Select Budget (in SAR millions)", min_value=0, max_value=100, value=(0, 100))
+
+# Filter the dataframe based on the selected criteria
+filtered_df = df
+if position_filter != 'All':
+    filtered_df = filtered_df[filtered_df['Position'] == position_filter]
+
+filtered_df = filtered_df[(filtered_df['Age'] >= age_filter[0]) & (filtered_df['Age'] <= age_filter[1])]
+filtered_df = filtered_df[(filtered_df['Market_Value_SAR'] >= budget_filter[0] * 1e6) & (filtered_df['Market_Value_SAR'] <= budget_filter[1] * 1e6)]
 
 # Display the table
-st.write(f"Displaying players in the position: {position_filter}")
-st.write(filtered_df[['Player Name', 'Age', 'Nationality', 'Club', 'Market_Value', 'Predicted_Market_Value', 'Transfer_Chance', 'Best_Fit_Club']])
+st.write(f"Displaying players with the selected filters (Position: {position_filter}, Age Range: {age_filter}, Budget: {budget_filter[0]}M to {budget_filter[1]}M SAR):")
+st.write(filtered_df[['Player Name', 'Age', 'Nationality', 'Position', 'Club', 'Market_Value_SAR', 
+                      'Predicted_Market_Value_SAR', 'Predicted_Market_Value_Year_1_SAR', 'Predicted_Market_Value_Year_2_SAR', 
+                      'Predicted_Market_Value_Year_3_SAR', 'Transfer_Chance', 'Best_Fit_Club']])
 
 # Function to create player card with football icon
 def player_card(player_data):
@@ -69,6 +89,9 @@ def player_card(player_data):
             <p><strong>Predicted Market Value (SAR):</strong> {player_data['Predicted_Market_Value_SAR']:.2f} SAR</p>
             <p><strong>Transfer Chance:</strong> {player_data['Transfer_Chance'] * 100:.1f}%</p>
             <p><strong>Best Fit Club:</strong> {player_data['Best_Fit_Club']}</p>
+            <p><strong>Predicted Market Value in 1 Year:</strong> {player_data['Predicted_Market_Value_Year_1_SAR']:.2f} SAR</p>
+            <p><strong>Predicted Market Value in 2 Years:</strong> {player_data['Predicted_Market_Value_Year_2_SAR']:.2f} SAR</p>
+            <p><strong>Predicted Market Value in 3 Years:</strong> {player_data['Predicted_Market_Value_Year_3_SAR']:.2f} SAR</p>
         </div>
         <div style="margin-left: auto; display: flex; justify-content: center; align-items: center;">
             <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/Football_Icon.svg" style="width: 30px; height: 30px; margin-left: 10px;">
