@@ -5,59 +5,59 @@ import random
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
-# Add custom CSS for styling (Football card style)
+# Add custom CSS for styling (FIFA-colored theme)
 st.markdown("""
     <style>
     .stApp {
-        background-color: #f0f4f7;
-        color: black;
+        background-color: #0f0f0f;  /* FIFA dark background */
+        color: #e5e5e5;
     }
     .stButton>button {
-        background-color: #4CAF50;
+        background-color: #f9a826; /* FIFA yellow */
         color: white;
         border-radius: 10px;
     }
     .stButton>button:hover {
-        background-color: #45a049;
+        background-color: #f79013;
     }
     .stMarkdown {
         font-size: 18px;
         font-weight: bold;
     }
     .stSelectbox, .stSlider, .stRadio, .stTextInput {
-        background-color: #e3f2fd;
-        color: black;
+        background-color: #262626;
+        color: #e5e5e5;
     }
     .stSelectbox>div>div {
-        background-color: #e3f2fd;
+        background-color: #262626;
     }
     .stTextInput>div>div {
-        background-color: #e3f2fd;
+        background-color: #262626;
     }
     .player-card {
-        background-color: #ffffff;
+        background-color: #1c1c1c;
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         padding: 20px;
         margin-bottom: 20px;
         max-width: 300px;
         display: inline-block;
         text-align: center;
         font-family: 'Arial', sans-serif;
-        color: #333;
+        color: #e5e5e5;
     }
     .player-card h2 {
-        font-size: 20px;
-        color: #333;
+        font-size: 22px;
+        color: #f9a826; /* FIFA yellow */
         margin-bottom: 10px;
     }
     .player-card .position {
         font-size: 16px;
-        color: #555;
+        color: #f9a826; /* FIFA yellow */
     }
     .player-card .market-value {
         font-size: 18px;
-        color: #2e7d32;
+        color: #4caf50; /* Green for market value */
         margin-top: 10px;
     }
     .player-card .age {
@@ -67,7 +67,17 @@ st.markdown("""
     .player-card .card-footer {
         margin-top: 15px;
         font-size: 14px;
-        color: #777;
+        color: #f9a826; /* FIFA yellow */
+    }
+    .player-card .transfer-chance {
+        font-size: 14px;
+        color: #ff5722; /* Red for transfer chance */
+    }
+    .ksa-flag {
+        display: block;
+        margin: 0 auto 20px;
+        width: 100px;
+        height: auto;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -118,10 +128,47 @@ def forecast_market_value(historical_data, years_to_predict=3):
     # Return predicted values
     return predicted_values
 
+# Function to calculate transfer chance using regression
+def calculate_transfer_chance(player):
+    """Calculate transfer chance using linear regression based on player's market value and age."""
+    # Prepare the data
+    # We will simulate the target variable (transfer chance) for training purposes
+    data = [
+        {"market_value": 50000000, "age": 38, "transfer_chance": 70},
+        {"market_value": 30000000, "age": 35, "transfer_chance": 50},
+        {"market_value": 45000000, "age": 31, "transfer_chance": 60},
+        {"market_value": 70000000, "age": 31, "transfer_chance": 80},
+        {"market_value": 25000000, "age": 32, "transfer_chance": 40},
+        {"market_value": 25000000, "age": 30, "transfer_chance": 55},
+        {"market_value": 35000000, "age": 32, "transfer_chance": 50},
+        {"market_value": 8000000, "age": 34, "transfer_chance": 20},
+        {"market_value": 25000000, "age": 29, "transfer_chance": 60},
+        {"market_value": 30000000, "age": 31, "transfer_chance": 65},
+    ]
+    
+    # Convert to DataFrame for regression
+    df = pd.DataFrame(data)
+    
+    # Create features and target variable
+    X = df[["market_value", "age"]]
+    y = df["transfer_chance"]
+    
+    # Train a regression model
+    model = LinearRegression()
+    model.fit(X, y)
+    
+    # Predict transfer chance for the player
+    player_data = np.array([[player["market_value"], player["age"]]])
+    transfer_chance = model.predict(player_data)[0]
+    
+    # Return the transfer chance (rounded to 2 decimal places)
+    return round(min(max(transfer_chance, 0), 100), 2)
+
 # Function to display player information as a football card
 def display_player_card(player):
     historical_data = generate_historical_data(player['market_value'])
     predicted_values = forecast_market_value(historical_data)
+    transfer_chance = calculate_transfer_chance(player)
     
     st.markdown(f"""
     <div class="player-card">
@@ -129,31 +176,24 @@ def display_player_card(player):
         <div class="position">{player['position']} | {player['club']}</div>
         <div class="market-value">Market Value: ${player['market_value'] / 1e6:.2f}M</div>
         <div class="age">Age: {player['age']}</div>
+        <div class="transfer-chance">Transfer Chance: {transfer_chance}%</div>
         <div class="card-footer">
             <strong>Predicted Market Value:</strong><br>
-            **{current_year + 1}:** ${predicted_values[0] / 1e6:.2f}M<br>
-            **{current_year + 2}:** ${predicted_values[1] / 1e6:.2f}M<br>
-            **{current_year + 3}:** ${predicted_values[2] / 1e6:.2f}M
+            {current_year + 1}: ${predicted_values[0] / 1e6:.2f}M<br>
+            {current_year + 2}: ${predicted_values[1] / 1e6:.2f}M<br>
+            {current_year + 3}: ${predicted_values[2] / 1e6:.2f}M
         </div>
     </div>
     """, unsafe_allow_html=True)
 
+# Display the Saudi flag at the top
+st.markdown('<img class="ksa-flag" src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Flag_of_Saudi_Arabia.svg" alt="KSA Flag">', unsafe_allow_html=True)
+
 # Create a selection for player positions and additional details
-st.title("⚽ Football Analytics Dashboard ⚽")
-st.sidebar.header("Player Filter ⚽")
-positions = ["Forward", "Midfielder", "Defender", "Goalkeeper", "Winger"]
-selected_position = st.sidebar.selectbox("Select Position", positions)
-selected_budget = st.sidebar.slider("Budget (in millions)", 10, 100, 50)
-selected_age = st.sidebar.slider("Age Range", 18, 40, (20, 35))
+st.title("Saudi Arabian Players Transfer Predictions")
+player_names = [player['name'] for player in players_data]
+selected_player_name = st.selectbox("Choose a Player:", player_names)
 
-# Filter players by selected criteria
-filtered_players = [
-    player for player in players_data
-    if player['position'] == selected_position and player['age'] >= selected_age[0] and player['age'] <= selected_age[1]
-]
-
-# Display players
-st.header(f"Players ({selected_position}s) Available for Your Budget: ${selected_budget}M")
-for player in filtered_players:
-    if player['market_value'] <= selected_budget * 1000000:
-        display_player_card(player)
+# Display selected player's info
+selected_player = next(player for player in players_data if player['name'] == selected_player_name)
+display_player_card(selected_player)
