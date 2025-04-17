@@ -9,6 +9,17 @@ import random
 # App configuration
 st.set_page_config(page_title="Football Analytics", layout="wide")
 
+# Add a football-themed background to the app
+st.markdown("""
+    <style>
+    .stApp {
+        background-image: url('https://images.unsplash.com/photo-1560366719-30f918c9a755');
+        background-size: cover;
+        background-position: center;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Static player data for 50 players from Saudi clubs
 players_data = [
     {"Player Name": "Salem Al-Dawsari", "Age": 31, "Nationality": "Saudi", "Position": "Forward", "Club": "Al Hilal", "xG": 0.7, "Assists": 5, "Dribbles": 10, "Tackles": 1, "Interceptions": 2, "PassingAccuracy": 80, "Previous_Season_Goals": 7, "Previous_Season_Assists": 5, "Market_Value": 8.0},
@@ -16,7 +27,7 @@ players_data = [
     {"Player Name": "Cristiano Ronaldo", "Age": 38, "Nationality": "Portuguese", "Position": "Forward", "Club": "Al Nassr", "xG": 0.8, "Assists": 6, "Dribbles": 7, "Tackles": 2, "Interceptions": 1, "PassingAccuracy": 87, "Previous_Season_Goals": 22, "Previous_Season_Assists": 7, "Market_Value": 25.0},
     {"Player Name": "Matheus Pereira", "Age": 28, "Nationality": "Brazilian", "Position": "Midfielder", "Club": "Al Hilal", "xG": 0.5, "Assists": 8, "Dribbles": 15, "Tackles": 4, "Interceptions": 3, "PassingAccuracy": 84, "Previous_Season_Goals": 4, "Previous_Season_Assists": 8, "Market_Value": 6.0},
     {"Player Name": "Odion Ighalo", "Age": 34, "Nationality": "Nigerian", "Position": "Forward", "Club": "Al Hilal", "xG": 0.6, "Assists": 3, "Dribbles": 6, "Tackles": 1, "Interceptions": 1, "PassingAccuracy": 78, "Previous_Season_Goals": 10, "Previous_Season_Assists": 3, "Market_Value": 7.0},
-    # Add more players as needed...
+    # Add more players as before...
 ]
 
 # Convert to DataFrame
@@ -35,46 +46,51 @@ df['Market_Value_SAR'] = df['Market_Value'] * 3.75
 df['Predicted_Market_Value_SAR'] = df['Predicted_Market_Value'] * 3.75
 
 # Displaying dashboard title and subtitle
-st.title("🌍 Football Player Analytics Dashboard")
+st.title("⚽ Football Player Analytics Dashboard")
 st.subheader("Explore player stats, predicted market values, transfer chances, and the best-fit clubs!")
 
 # Sidebar filters for position and club
-st.sidebar.header("Filter Players")
-positions = st.sidebar.multiselect("Position", options=df["Position"].unique(), default=df["Position"].unique())
-clubs = st.sidebar.multiselect("Club", options=df["Club"].unique(), default=df["Club"].unique())
+position_filter = st.sidebar.selectbox("Select Position", df['Position'].unique())
+filtered_df = df[df['Position'] == position_filter]
 
-# Filter dataframe based on sidebar selections
-filtered_df = df[(df["Position"].isin(positions)) & (df["Club"].isin(clubs))]
+# Display the table
+st.write(f"Displaying players in the position: {position_filter}")
+st.write(filtered_df[['Player Name', 'Age', 'Nationality', 'Club', 'Market_Value', 'Predicted_Market_Value', 'Transfer_Chance', 'Best_Fit_Club']])
 
-# Display filtered player avatars and details
-st.subheader("Player Avatars & Performance")
-cols = st.columns(6)
-for i, row in filtered_df.iterrows():
-    with cols[i % 6]:
-        st.image(row["Image"], width=80, caption=row["Player Name"])
-        st.write(f"**Predicted Market Value**: {row['Predicted_Market_Value']:.2f}M USD")
-        st.write(f"**Transfer Chance**: {row['Transfer_Chance']*100:.1f}%")
-        st.write(f"**Best Fit Club**: {row['Best_Fit_Club']}")
-        st.write(f"**Previous Market Value**: {row['Market_Value']}M USD")
+# Function to create player card with football icon
+def player_card(player_data):
+    card = f"""
+    <div style="padding: 10px; background-color: rgba(0, 0, 0, 0.6); margin: 10px; border-radius: 8px; color: white; display: flex; align-items: center;">
+        <img src="{player_data['Image']}" style="width: 60px; height: 60px; border-radius: 50%; margin-right: 15px;">
+        <div>
+            <h3>{player_data['Player Name']}</h3>
+            <p><strong>Club:</strong> {player_data['Club']}</p>
+            <p><strong>Position:</strong> {player_data['Position']}</p>
+            <p><strong>Predicted Market Value (SAR):</strong> {player_data['Predicted_Market_Value_SAR']:.2f} SAR</p>
+            <p><strong>Transfer Chance:</strong> {player_data['Transfer_Chance'] * 100:.1f}%</p>
+            <p><strong>Best Fit Club:</strong> {player_data['Best_Fit_Club']}</p>
+        </div>
+        <div style="margin-left: auto; display: flex; justify-content: center; align-items: center;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/Football_Icon.svg" style="width: 30px; height: 30px; margin-left: 10px;">
+        </div>
+    </div>
+    """
+    return card
 
-# KPI section: Total players, average market value, etc.
-st.markdown("### Key Stats")
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Players", len(filtered_df))
-col2.metric("Avg Market Value (USD)", f"{filtered_df['Market_Value'].mean():.2f}")
-col3.metric("Avg Passing Accuracy (%)", f"{filtered_df['PassingAccuracy'].mean():.1f}")
+# Display player cards for filtered players
+for _, player in filtered_df.iterrows():
+    st.markdown(player_card(player), unsafe_allow_html=True)
 
-# Scatter plot for player performance comparison
-st.markdown("### 📊 Performance Comparison (xG vs Assists)")
-chart = alt.Chart(filtered_df).mark_circle(size=100).encode(
-    x='xG',
-    y='Assists',
+# Adding interactive graphs (Optional)
+x = df['Age']
+y = df['Market_Value']
+
+# Scatter plot for Market Value vs Age
+chart = alt.Chart(df).mark_circle(size=60).encode(
+    x=alt.X('Age', title='Age'),
+    y=alt.Y('Market_Value', title='Market Value (M)'),
     color='Position',
-    tooltip=['Player Name', 'xG', 'Assists', 'Dribbles']
+    tooltip=['Player Name', 'Market_Value', 'Position', 'Age']
 ).interactive()
 
 st.altair_chart(chart, use_container_width=True)
-
-# Detailed table of filtered players
-st.markdown("### 📋 Player Details")
-st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True)
