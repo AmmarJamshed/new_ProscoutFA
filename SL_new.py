@@ -38,16 +38,16 @@ st.markdown("""
 
 # Updated list of 25 Saudi players data with football emojis in name for flair
 players_data = [
-    {"name": "Cristiano Ronaldo ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 50000000, "age": 38, "avatar_url": "https://via.placeholder.com/80x80.png?text=CR7"},
-    {"name": "Karim Benzema ⚽", "club": "Al-Ittihad", "position": "Forward", "market_value": 30000000, "age": 35, "avatar_url": "https://via.placeholder.com/80x80.png?text=Benzema"},
-    {"name": "Neymar Jr. ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 45000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Neymar"},
-    {"name": "Sadio Mane ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 70000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Mane"},
-    {"name": "Riyad Mahrez ⚽", "club": "Al Ahli", "position": "Winger", "market_value": 25000000, "age": 32, "avatar_url": "https://via.placeholder.com/80x80.png?text=Mahrez"},
-    {"name": "Marcelo Brozović ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 30, "avatar_url": "https://via.placeholder.com/80x80.png?text=Brozovic"},
-    {"name": "Kalidou Koulibaly ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 35000000, "age": 32, "avatar_url": "https://via.placeholder.com/80x80.png?text=Koulibaly"},
-    {"name": "César Azpilicueta ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://via.placeholder.com/80x80.png?text=Azpilicueta"},
-    {"name": "Anderson Talisca ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://via.placeholder.com/80x80.png?text=Talisca"},
-    {"name": "Alvaro Morata ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Morata"},
+    {"name": "Cristiano Ronaldo ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 50000000, "age": 38, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/4/47/Cristiano_Ronaldo_2018.jpg"},
+    {"name": "Karim Benzema ⚽", "club": "Al-Ittihad", "position": "Forward", "market_value": 30000000, "age": 35, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/0/05/Karim_Benzema_2020.jpg"},
+    {"name": "Neymar Jr. ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 45000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/9/99/Neymar_2018.jpg"},
+    {"name": "Sadio Mane ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 70000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Sadio_Mane_2022.jpg"},
+    {"name": "Riyad Mahrez ⚽", "club": "Al Ahli", "position": "Winger", "market_value": 25000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/e/ef/Riyad_Mahrez_2021.jpg"},
+    {"name": "Marcelo Brozović ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 30, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/9/97/Marcelo_Brozovi%C4%87_2020.jpg"},
+    {"name": "Kalidou Koulibaly ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 35000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Koulibaly_2019.jpg"},
+    {"name": "César Azpilicueta ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/6/63/César_Azpilicueta_2020.jpg"},
+    {"name": "Anderson Talisca ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Anderson_Talisca_2018.jpg"},
+    {"name": "Alvaro Morata ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Alvaro_Morata_2018.jpg"},
     # Add more players here...
 ]
 
@@ -84,7 +84,7 @@ def forecast_market_value(historical_data, years_to_predict=3):
 
 # Function to display player information and avatars
 def display_player(player):
-    st.image(player['avatar_url'], width=80, use_column_width=True)
+    st.image(player['avatar_url'], width=80)
     st.write(f"**{player['name']}** - {player['position']} - Age: {player['age']}")
     
     # Simulate historical data for the player
