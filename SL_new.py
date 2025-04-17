@@ -17,6 +17,7 @@ players_data = [
     {"name": "César Azpilicueta", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Cesar_Azpilicueta_2021.jpg"},
     {"name": "Anderson Talisca", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Talisca_2021.jpg"},
     {"name": "Alvaro Morata", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Alvaro_Morata_2021.jpg"},
+    # Add more players here...
 ]
 
 # Get the current year
@@ -52,7 +53,7 @@ def forecast_market_value(historical_data, years_to_predict=3):
 
 # Function to display player information and avatars
 def display_player(player):
-    st.image(player['avatar_url'], width=80, use_container_width=True)
+    st.image(player['avatar_url'], width=80, use_column_width=True)
     st.write(f"**{player['name']}** - {player['position']} - Age: {player['age']}")
     
     # Simulate historical data for the player
@@ -89,3 +90,13 @@ for player in filtered_players:
     if player['market_value'] <= selected_budget * 1000000:
         display_player(player)
         st.write("---")
+
+# Show summary table
+st.header("Summary of Selected Players")
+summary_data = [
+    {"Name": player["name"], "Position": player["position"], "Age": player["age"], "Market Value": f"${player['market_value']:,.2f}"}
+    for player in filtered_players if player['market_value'] <= selected_budget * 1000000
+]
+
+df_summary = pd.DataFrame(summary_data)
+st.dataframe(df_summary)
