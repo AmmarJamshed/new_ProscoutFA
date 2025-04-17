@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import random
 from datetime import datetime
+from sklearn.linear_model import LinearRegression
 
 # Updated list of 25 Saudi players data
 players_data = [
@@ -16,43 +17,55 @@ players_data = [
     {"name": "César Azpilicueta", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Cesar_Azpilicueta_2021.jpg"},
     {"name": "Anderson Talisca", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Talisca_2021.jpg"},
     {"name": "Alvaro Morata", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Alvaro_Morata_2021.jpg"},
-    {"name": "Fabinho", "club": "Al-Ittihad", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Fabinho_2019.jpg"},
-    {"name": "Mason Mount", "club": "Al-Ittihad", "position": "Midfielder", "market_value": 40000000, "age": 26, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Mason_Mount_2022.jpg"},
-    {"name": "Fábio Vieira", "club": "Al Nassr", "position": "Midfielder", "market_value": 18000000, "age": 23, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/6/62/Fabio_Vieira_2022.jpg"},
-    {"name": "James Rodríguez", "club": "Al Rayyan", "position": "Midfielder", "market_value": 15000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/4/49/James_Rodríguez_2018.jpg"},
-    {"name": "Angelo Ogbonna", "club": "Al Ahli", "position": "Defender", "market_value": 8000000, "age": 35, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Angelo_Ogbonna_2019.jpg"},
-    {"name": "Sergio Ramos", "club": "Al Nassr", "position": "Defender", "market_value": 15000000, "age": 38, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/2/23/Sergio_Ramos_2020.jpg"},
-    {"name": "David Ospina", "club": "Al Nassr", "position": "Goalkeeper", "market_value": 5000000, "age": 35, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/5/58/David_Ospina_2018.jpg"},
-    {"name": "Abdullah Al-Muaiouf", "club": "Al Hilal", "position": "Goalkeeper", "market_value": 1000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Abdullah_Al-Muaiouf_2016.jpg"},
-    {"name": "Yasser Al-Shahrani", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 30, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Yasser_Al_Shahrani_2018.jpg"},
-    {"name": "Salman Al-Faraj", "club": "Al Hilal", "position": "Midfielder", "market_value": 5000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Salman_Al-Faraj_2021.jpg"},
-    {"name": "Mohammad Al-Dosari", "club": "Al Nassr", "position": "Midfielder", "market_value": 3000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Mohammad_Al-Dosari_2020.jpg"},
-    {"name": "Abdulrahman Al-Obaid", "club": "Al Ahli", "position": "Defender", "market_value": 2000000, "age": 30, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/12/Abdulrahman_Al-Obaid_2016.jpg"},
 ]
 
 # Get the current year
 current_year = datetime.now().year
 
-# Function to calculate predicted market value
-def predict_market_value(current_value, years_from_now):
-    growth_rate = random.uniform(0.05, 0.15)  # 5% to 15% growth per year
-    predicted_value = current_value * (1 + growth_rate) ** years_from_now
-    return round(predicted_value, 2)
+# Function to simulate historical market values (for model training)
+def generate_historical_data(initial_value, years=5):
+    """Simulate historical market data for a player over the past few years."""
+    historical_data = []
+    for year in range(current_year - years, current_year):
+        value = initial_value * (1 + random.uniform(-0.1, 0.2))  # Simulate market fluctuations (between -10% and +20%)
+        historical_data.append((year, round(value, 2)))
+        initial_value = value
+    return historical_data
+
+# Function to apply Linear Regression and predict future market values
+def forecast_market_value(historical_data, years_to_predict=3):
+    """Use Linear Regression to forecast market values."""
+    # Prepare the data
+    years = np.array([data[0] for data in historical_data]).reshape(-1, 1)
+    values = np.array([data[1] for data in historical_data])
+    
+    # Create and fit the model
+    model = LinearRegression()
+    model.fit(years, values)
+    
+    # Predict future values
+    future_years = np.array([current_year + i for i in range(1, years_to_predict + 1)]).reshape(-1, 1)
+    predicted_values = model.predict(future_years)
+    
+    # Return predicted values
+    return predicted_values
 
 # Function to display player information and avatars
 def display_player(player):
     st.image(player['avatar_url'], width=80, use_column_width=True)
     st.write(f"**{player['name']}** - {player['position']} - Age: {player['age']}")
     
-    # Market value predictions for next 3 years
-    years = [1, 2, 3]
-    market_values = [predict_market_value(player['market_value'], year) for year in years]
+    # Simulate historical data for the player
+    historical_data = generate_historical_data(player['market_value'])
+    
+    # Forecast future market values
+    predicted_values = forecast_market_value(historical_data)
     
     # Display predicted market values
-    for i, year in enumerate(years):
-        st.write(f"**Market Value in {current_year + year}:** ${market_values[i]:,} USD")
+    for i, year in enumerate(range(1, 4)):
+        st.write(f"**Market Value in {current_year + year}:** ${predicted_values[i]:,.2f} USD")
     
-    # Display best fit club
+    # Display best fit club (random for now)
     best_fit_club = random.choice(["Al Nassr", "Al Hilal", "Al-Ittihad", "Al Ahli"])  # Random choice for now
     st.write(f"**Best Fit Club:** {best_fit_club}")
 
@@ -73,15 +86,6 @@ filtered_players = [
 # Display players
 st.header(f"Players ({selected_position}s) Available for Your Budget: ${selected_budget}M")
 for player in filtered_players:
-    display_player(player)
-
-# Show a table of players with their market values for the next 3 years
-st.subheader("Player Market Value Predictions")
-table_data = []
-for player in filtered_players:
-    market_values = [predict_market_value(player['market_value'], year) for year in years]
-    table_data.append({
-        "Player": player['name'],
-        "Current Market Value": f"${player['market_value']:,} USD",
-        f"Market Value in {current_year + 1}": f"${market_values[0]:,} USD",
-        f"Market Value in {current_year + 2}": f"${market_values[1]:,} USD",
+    if player['market_value'] <= selected_budget * 1000000:
+        display_player(player)
+        st.write("---")
