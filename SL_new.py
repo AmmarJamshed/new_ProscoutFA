@@ -5,59 +5,63 @@ import random
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
-# Add custom CSS for styling (FIFA-colored theme)
+# Add custom CSS for styling (FIFA-style colors with green and white)
 st.markdown("""
     <style>
     .stApp {
-        background-color: #0f0f0f;  /* FIFA dark background */
-        color: #e5e5e5;
+        background-color: #0c7c28;  /* FIFA green background */
+        color: #ffffff;
     }
     .stButton>button {
-        background-color: #f9a826; /* FIFA yellow */
+        background-color: #44c767; /* FIFA green button */
         color: white;
-        border-radius: 10px;
-    }
-    .stButton>button:hover {
-        background-color: #f79013;
-    }
-    .stMarkdown {
-        font-size: 18px;
+        border-radius: 12px;
         font-weight: bold;
     }
+    .stButton>button:hover {
+        background-color: #33a54a;
+    }
+    .stMarkdown {
+        font-size: 20px;
+        font-weight: bold;
+        color: #ffffff;
+    }
     .stSelectbox, .stSlider, .stRadio, .stTextInput {
-        background-color: #262626;
-        color: #e5e5e5;
+        background-color: #2c6e3f;
+        color: #ffffff;
+        border-radius: 8px;
     }
     .stSelectbox>div>div {
-        background-color: #262626;
+        background-color: #2c6e3f;
     }
     .stTextInput>div>div {
-        background-color: #262626;
+        background-color: #2c6e3f;
     }
     .player-card {
-        background-color: #1c1c1c;
+        background-color: #ffffff;
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         padding: 20px;
         margin-bottom: 20px;
         max-width: 300px;
         display: inline-block;
         text-align: center;
         font-family: 'Arial', sans-serif;
-        color: #e5e5e5;
+        color: #333;
+        border: 3px solid #44c767; /* FIFA green border */
     }
     .player-card h2 {
         font-size: 22px;
-        color: #f9a826; /* FIFA yellow */
+        color: #44c767; /* FIFA green */
         margin-bottom: 10px;
     }
     .player-card .position {
         font-size: 16px;
-        color: #f9a826; /* FIFA yellow */
+        color: #44c767; /* FIFA green */
     }
     .player-card .market-value {
         font-size: 18px;
-        color: #4caf50; /* Green for market value */
+        color: #009e4d; /* Dark green for market value */
         margin-top: 10px;
     }
     .player-card .age {
@@ -67,11 +71,11 @@ st.markdown("""
     .player-card .card-footer {
         margin-top: 15px;
         font-size: 14px;
-        color: #f9a826; /* FIFA yellow */
+        color: #44c767; /* FIFA green */
     }
     .player-card .transfer-chance {
         font-size: 14px;
-        color: #ff5722; /* Red for transfer chance */
+        color: #f44336; /* Red for transfer chance */
     }
     .ksa-flag {
         display: block;
@@ -172,24 +176,20 @@ def display_player_card(player):
     
     st.markdown(f"""
     <div class="player-card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0f/Flag_of_Saudi_Arabia.svg" class="ksa-flag" alt="KSA Flag">
         <h2>{player['name']}</h2>
-        <div class="position">{player['position']} | {player['club']}</div>
-        <div class="market-value">Market Value: ${player['market_value'] / 1e6:.2f}M</div>
-        <div class="age">Age: {player['age']}</div>
-        <div class="transfer-chance">Transfer Chance: {transfer_chance}%</div>
-        <div class="card-footer">
-            <strong>Predicted Market Value:</strong><br>
-            {current_year + 1}: ${predicted_values[0] / 1e6:.2f}M<br>
-            {current_year + 2}: ${predicted_values[1] / 1e6:.2f}M<br>
-            {current_year + 3}: ${predicted_values[2] / 1e6:.2f}M
-        </div>
+        <p class="position">{player['position']} - {player['club']}</p>
+        <p class="market-value">Current Market Value: ${player['market_value']:,.2f}</p>
+        <p class="age">Age: {player['age']}</p>
+        <p class="transfer-chance">Transfer Chance: {transfer_chance}%</p>
+        <p class="card-footer">Market Value Forecast:</p>
+        <p class="market-value">**{current_year+1}:** ${predicted_values[0]:,.2f}</p>
+        <p class="market-value">**{current_year+2}:** ${predicted_values[1]:,.2f}</p>
+        <p class="market-value">**{current_year+3}:** ${predicted_values[2]:,.2f}</p>
     </div>
     """, unsafe_allow_html=True)
 
-# Display the Saudi flag at the top
-st.markdown('<img class="ksa-flag" src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Flag_of_Saudi_Arabia.svg" alt="KSA Flag">', unsafe_allow_html=True)
-
-# Create a selection for player positions and additional details
+# Select player and display their information
 st.title("Saudi Arabian Players Transfer Predictions")
 player_names = [player['name'] for player in players_data]
 selected_player_name = st.selectbox("Choose a Player:", player_names)
