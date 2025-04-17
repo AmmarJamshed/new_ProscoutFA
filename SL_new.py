@@ -82,14 +82,76 @@ filtered_df = df[(df["Position"].isin(positions)) & (df["League"].isin(leagues))
 # Dashboard UI
 st.title("🌍 Football Player Analytics Dashboard")
 
-# Avatar preview
-st.subheader("Player Avatars")
-cols = st.columns(6)
-for i, row in filtered_df.head(6).iterrows():
-    with cols[i % 6]:
-        st.image(row["Image"], width=80, caption=row["Player Name"])
+# Custom CSS for styling
+st.markdown("""
+    <style>
+        .player-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f4f4f4;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .player-card img {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-right: 20px;
+        }
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .player-info h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .player-info p {
+            margin: 2px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .player-stats {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .player-stats p {
+            margin: 2px 0;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .player-stats span {
+            color: #0066cc;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# KPIs
+# Display players in a dynamic, attractive layout
+for i, row in filtered_df.iterrows():
+    with st.container():
+        st.markdown(f"""
+            <div class="player-card">
+                <img src="{row['Image']}" alt="Player Avatar">
+                <div class="player-info">
+                    <h3>{row['Player Name']}</h3>
+                    <p><strong>Position:</strong> {row['Position']}</p>
+                    <p><strong>Age:</strong> {row['Age']} | <strong>Nationality:</strong> {row['Nationality']}</p>
+                </div>
+                <div class="player-stats">
+                    <p><strong>Predicted Value:</strong> <span>${row['Predicted_Market_Value_2026']}M</span></p>
+                    <p><strong>Transfer Chance:</strong> <span>{row['Transfer_Chance (%)']}%</span></p>
+                    <p><strong>Best Fit Club:</strong> <span>{row['Best_Fit_Club']}</span></p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+# KPIs Section
 st.markdown("### ⚽ Key Stats")
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Players", len(filtered_df))
