@@ -5,18 +5,49 @@ import random
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
-# Updated list of 25 Saudi players data
+# Add custom CSS for styling
+st.markdown("""
+    <style>
+    .stApp {
+        background: url('https://cdn.pixabay.com/photo/2016/09/20/18/45/football-1683722_960_720.jpg') no-repeat center center fixed;
+        background-size: cover;
+        color: white;
+    }
+    .stButton>button {
+        background-color: #FFCC00;
+        color: black;
+        border-radius: 10px;
+    }
+    .stButton>button:hover {
+        background-color: #FF9900;
+    }
+    .stMarkdown {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .stSelectbox, .stSlider, .stRadio, .stTextInput {
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+    }
+    .stImage {
+        border-radius: 50%;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Updated list of 25 Saudi players data with football emojis in name for flair
 players_data = [
-    {"name": "Cristiano Ronaldo", "club": "Al Nassr", "position": "Forward", "market_value": 50000000, "age": 38, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/4/45/Cristiano_Ronaldo_2018.jpg"},
-    {"name": "Karim Benzema", "club": "Al-Ittihad", "position": "Forward", "market_value": 30000000, "age": 35, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Karim_Benzema_2019.jpg"},
-    {"name": "Neymar Jr.", "club": "Al Hilal", "position": "Forward", "market_value": 45000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/6/69/Neymar_2018.jpg"},
-    {"name": "Sadio Mane", "club": "Al Nassr", "position": "Forward", "market_value": 70000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/3/31/Sadio_Mane_2019.jpg"},
-    {"name": "Riyad Mahrez", "club": "Al Ahli", "position": "Winger", "market_value": 25000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/3/32/Riyad_Mahrez_2020.jpg"},
-    {"name": "Marcelo Brozović", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 30, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Marcelo_Brozovic_-_2018.jpg"},
-    {"name": "Kalidou Koulibaly", "club": "Al Hilal", "position": "Defender", "market_value": 35000000, "age": 32, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Kalidou_Koulibaly_2019.jpg"},
-    {"name": "César Azpilicueta", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Cesar_Azpilicueta_2021.jpg"},
-    {"name": "Anderson Talisca", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Talisca_2021.jpg"},
-    {"name": "Alvaro Morata", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Alvaro_Morata_2021.jpg"},
+    {"name": "Cristiano Ronaldo ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 50000000, "age": 38, "avatar_url": "https://via.placeholder.com/80x80.png?text=CR7"},
+    {"name": "Karim Benzema ⚽", "club": "Al-Ittihad", "position": "Forward", "market_value": 30000000, "age": 35, "avatar_url": "https://via.placeholder.com/80x80.png?text=Benzema"},
+    {"name": "Neymar Jr. ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 45000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Neymar"},
+    {"name": "Sadio Mane ⚽", "club": "Al Nassr", "position": "Forward", "market_value": 70000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Mane"},
+    {"name": "Riyad Mahrez ⚽", "club": "Al Ahli", "position": "Winger", "market_value": 25000000, "age": 32, "avatar_url": "https://via.placeholder.com/80x80.png?text=Mahrez"},
+    {"name": "Marcelo Brozović ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 30, "avatar_url": "https://via.placeholder.com/80x80.png?text=Brozovic"},
+    {"name": "Kalidou Koulibaly ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 35000000, "age": 32, "avatar_url": "https://via.placeholder.com/80x80.png?text=Koulibaly"},
+    {"name": "César Azpilicueta ⚽", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "avatar_url": "https://via.placeholder.com/80x80.png?text=Azpilicueta"},
+    {"name": "Anderson Talisca ⚽", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "avatar_url": "https://via.placeholder.com/80x80.png?text=Talisca"},
+    {"name": "Alvaro Morata ⚽", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "avatar_url": "https://via.placeholder.com/80x80.png?text=Morata"},
     # Add more players here...
 ]
 
@@ -71,8 +102,8 @@ def display_player(player):
     st.write(f"**Best Fit Club:** {best_fit_club}")
 
 # Create a selection for player positions and additional details
-st.title("Football Analytics Dashboard")
-st.sidebar.header("Player Filter")
+st.title("⚽ Football Analytics Dashboard ⚽")
+st.sidebar.header("Player Filter ⚽")
 positions = ["Forward", "Midfielder", "Defender", "Goalkeeper", "Winger"]
 selected_position = st.sidebar.selectbox("Select Position", positions)
 selected_budget = st.sidebar.slider("Budget (in millions)", 10, 100, 50)
@@ -90,13 +121,3 @@ for player in filtered_players:
     if player['market_value'] <= selected_budget * 1000000:
         display_player(player)
         st.write("---")
-
-# Show summary table
-st.header("Summary of Selected Players")
-summary_data = [
-    {"Name": player["name"], "Position": player["position"], "Age": player["age"], "Market Value": f"${player['market_value']:,.2f}"}
-    for player in filtered_players if player['market_value'] <= selected_budget * 1000000
-]
-
-df_summary = pd.DataFrame(summary_data)
-st.dataframe(df_summary)
