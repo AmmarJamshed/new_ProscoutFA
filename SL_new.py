@@ -5,7 +5,7 @@ import random
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
-# Add custom CSS for styling for a light-colored theme
+# Add custom CSS for styling (Football card style)
 st.markdown("""
     <style>
     .stApp {
@@ -33,6 +33,41 @@ st.markdown("""
     }
     .stTextInput>div>div {
         background-color: #e3f2fd;
+    }
+    .player-card {
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        max-width: 300px;
+        display: inline-block;
+        text-align: center;
+        font-family: 'Arial', sans-serif;
+        color: #333;
+    }
+    .player-card h2 {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .player-card .position {
+        font-size: 16px;
+        color: #555;
+    }
+    .player-card .market-value {
+        font-size: 18px;
+        color: #2e7d32;
+        margin-top: 10px;
+    }
+    .player-card .age {
+        font-size: 14px;
+        color: #888;
+    }
+    .player-card .card-footer {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #777;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -83,23 +118,25 @@ def forecast_market_value(historical_data, years_to_predict=3):
     # Return predicted values
     return predicted_values
 
-# Function to display player information
-def display_player(player):
-    st.write(f"**{player['name']}** - {player['position']} - Age: {player['age']}")
-    
-    # Simulate historical data for the player
+# Function to display player information as a football card
+def display_player_card(player):
     historical_data = generate_historical_data(player['market_value'])
-    
-    # Forecast future market values
     predicted_values = forecast_market_value(historical_data)
     
-    # Display predicted market values
-    for i, year in enumerate(range(1, 4)):
-        st.write(f"**Market Value in {current_year + year}:** ${predicted_values[i]:,.2f} USD")
-    
-    # Display best fit club (random for now)
-    best_fit_club = random.choice(["Al Nassr", "Al Hilal", "Al-Ittihad", "Al Ahli"])  # Random choice for now
-    st.write(f"**Best Fit Club:** {best_fit_club}")
+    st.markdown(f"""
+    <div class="player-card">
+        <h2>{player['name']}</h2>
+        <div class="position">{player['position']} | {player['club']}</div>
+        <div class="market-value">Market Value: ${player['market_value'] / 1e6:.2f}M</div>
+        <div class="age">Age: {player['age']}</div>
+        <div class="card-footer">
+            <strong>Predicted Market Value:</strong><br>
+            **{current_year + 1}:** ${predicted_values[0] / 1e6:.2f}M<br>
+            **{current_year + 2}:** ${predicted_values[1] / 1e6:.2f}M<br>
+            **{current_year + 3}:** ${predicted_values[2] / 1e6:.2f}M
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Create a selection for player positions and additional details
 st.title("⚽ Football Analytics Dashboard ⚽")
@@ -119,5 +156,4 @@ filtered_players = [
 st.header(f"Players ({selected_position}s) Available for Your Budget: ${selected_budget}M")
 for player in filtered_players:
     if player['market_value'] <= selected_budget * 1000000:
-        display_player(player)
-        st.write("---")
+        display_player_card(player)
