@@ -1,142 +1,119 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import requests
+from PIL import Image
+import altair as alt
 import random
-from datetime import datetime
-from sklearn.linear_model import LinearRegression
 
-# Add custom CSS for styling
+# App configuration
+st.set_page_config(page_title="Football Analytics", layout="wide")
+
+# Add a football-themed background to the app
 st.markdown("""
     <style>
     .stApp {
-        background-color: #ffffff;  /* White background for the app */
-        color: #000000;  /* Black text for readability */
-    }
-    .stButton>button {
-        background-color: #ff8c00; /* Orange button */
-        color: white;
-        border-radius: 12px;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #ff6a00;
-    }
-    .stMarkdown {
-        font-size: 20px;
-        font-weight: bold;
-        color: #000000;
-    }
-    .stSelectbox, .stSlider, .stRadio, .stTextInput {
-        background-color: #ffeb3b;  /* Yellow background for dropdowns */
-        color: #000000;
-        border-radius: 8px;
-    }
-    .stSelectbox>div>div {
-        background-color: #ffeb3b;
-    }
-    .stTextInput>div>div {
-        background-color: #ffeb3b;
-    }
-    .player-card {
-        background-color: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 128, 0, 0.5);  /* Green shadow */
-        padding: 20px;
-        margin-bottom: 20px;
-        max-width: 300px;
-        display: inline-block;
-        text-align: center;
-        font-family: 'Arial', sans-serif;
-        color: #333;
-        border: 3px solid #4CAF50; /* Green border for player cards */
-    }
-    .player-card h2 {
-        font-size: 22px;
-        color: #4CAF50; /* Green for player names */
-        margin-bottom: 10px;
-        font-weight: bold;
-    }
-    .player-card .position {
-        font-size: 16px;
-        color: #4CAF50;
-    }
-    .player-card .market-value {
-        font-size: 18px;
-        color: #009e4d;  /* Green for market value */
-        margin-top: 10px;
-    }
-    .player-card .age {
-        font-size: 14px;
-        color: #888;
-    }
-    .player-card .card-footer {
-        margin-top: 15px;
-        font-size: 14px;
-        color: #4CAF50;
-    }
-    .player-card .transfer-chance {
-        font-size: 14px;
-        color: #f44336; /* Red for transfer chance */
-    }
-    .ksa-flag {
-        display: block;
-        margin: 0 auto 20px;
-        width: 100px;
-        height: auto;
+        background-image: url('https://images.unsplash.com/photo-1560366719-30f918c9a755');
+        background-size: cover;
+        background-position: center;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Sample player data
+# Static player data for 50 players from Saudi clubs
 players_data = [
-    {"name": "Cristiano Ronaldo", "club": "Al Nassr", "position": "Forward", "market_value": 50000000, "age": 38, "style": "Attacking"},
-    {"name": "Karim Benzema", "club": "Al-Ittihad", "position": "Forward", "market_value": 30000000, "age": 35, "style": "Attacking"},
-    {"name": "Neymar Jr.", "club": "Al Hilal", "position": "Forward", "market_value": 45000000, "age": 31, "style": "Attacking"},
-    {"name": "Sadio Mane", "club": "Al Nassr", "position": "Forward", "market_value": 70000000, "age": 31, "style": "Balanced"},
-    {"name": "Riyad Mahrez", "club": "Al Ahli", "position": "Winger", "market_value": 25000000, "age": 32, "style": "Balanced"},
-    {"name": "Marcelo Brozović", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 30, "style": "Defensive"},
-    {"name": "Kalidou Koulibaly", "club": "Al Hilal", "position": "Defender", "market_value": 35000000, "age": 32, "style": "Defensive"},
-    {"name": "César Azpilicueta", "club": "Al Hilal", "position": "Defender", "market_value": 8000000, "age": 34, "style": "Defensive"},
-    {"name": "Anderson Talisca", "club": "Al Nassr", "position": "Midfielder", "market_value": 25000000, "age": 29, "style": "Balanced"},
-    {"name": "Alvaro Morata", "club": "Al Hilal", "position": "Forward", "market_value": 30000000, "age": 31, "style": "Attacking"},
+    {"Player Name": "Salem Al-Dawsari", "Age": 31, "Nationality": "Saudi", "Position": "Forward", "Club": "Al Hilal", "xG": 0.7, "Assists": 5, "Dribbles": 10, "Tackles": 1, "Interceptions": 2, "PassingAccuracy": 80, "Previous_Season_Goals": 7, "Previous_Season_Assists": 5, "Market_Value": 8.0},
+    {"Player Name": "Anderson Talisca", "Age": 29, "Nationality": "Brazilian", "Position": "Midfielder", "Club": "Al Nassr", "xG": 0.9, "Assists": 4, "Dribbles": 12, "Tackles": 3, "Interceptions": 1, "PassingAccuracy": 85, "Previous_Season_Goals": 12, "Previous_Season_Assists": 6, "Market_Value": 12.5},
+    {"Player Name": "Cristiano Ronaldo", "Age": 38, "Nationality": "Portuguese", "Position": "Forward", "Club": "Al Nassr", "xG": 0.8, "Assists": 6, "Dribbles": 7, "Tackles": 2, "Interceptions": 1, "PassingAccuracy": 87, "Previous_Season_Goals": 22, "Previous_Season_Assists": 7, "Market_Value": 25.0},
+    {"Player Name": "Matheus Pereira", "Age": 28, "Nationality": "Brazilian", "Position": "Midfielder", "Club": "Al Hilal", "xG": 0.5, "Assists": 8, "Dribbles": 15, "Tackles": 4, "Interceptions": 3, "PassingAccuracy": 84, "Previous_Season_Goals": 4, "Previous_Season_Assists": 8, "Market_Value": 6.0},
+    {"Player Name": "Odion Ighalo", "Age": 34, "Nationality": "Nigerian", "Position": "Forward", "Club": "Al Hilal", "xG": 0.6, "Assists": 3, "Dribbles": 6, "Tackles": 1, "Interceptions": 1, "PassingAccuracy": 78, "Previous_Season_Goals": 10, "Previous_Season_Assists": 3, "Market_Value": 7.0},
+    # Add more players as before...
 ]
 
-# Sidebar filter options
-style_of_play = st.sidebar.selectbox("Style of Playing:", ["Attacking", "Balanced", "Defensive"])
-min_age = st.sidebar.slider("Minimum Age:", 18, 40, 25)
-max_age = st.sidebar.slider("Maximum Age:", 18, 40, 35)
-budget_range = st.sidebar.selectbox("Budget Range:", ["Low", "Medium", "High"])
+# Convert to DataFrame
+df = pd.DataFrame(players_data)
 
-# Function to filter and display player cards
-def display_filtered_players(style, min_age, max_age, budget_range):
-    filtered_players = [player for player in players_data if 
-                        (player['style'] == style) and
-                        (min_age <= player['age'] <= max_age) and
-                        (budget_range == 'Low' and player['market_value'] <= 20000000 or
-                         budget_range == 'Medium' and 20000000 < player['market_value'] <= 50000000 or
-                         budget_range == 'High' and player['market_value'] > 50000000)]
-    
-    for player in filtered_players:
-        # Generate historical data for the player
-        historical_data = generate_historical_data(player['market_value'])
-        predicted_values = forecast_market_value(historical_data)
-        transfer_chance = calculate_transfer_chance(player)
-        
-        # Display player card
-        st.markdown(f"""
-            <div class="player-card">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/0f/Flag_of_Saudi_Arabia.svg" class="ksa-flag" alt="KSA Flag">
-                <h2>{player['name']}</h2>
-                <p class="position">{player['position']} - {player['club']}</p>
-                <p class="market-value">Current Market Value: ${player['market_value']:,.2f}</p>
-                <p class="age">Age: {player['age']}</p>
-                <p class="transfer-chance">Transfer Chance: {transfer_chance}%</p>
-                <p class="card-footer">Market Value Forecast:</p>
-                <p class="market-value">{current_year+1}: ${predicted_values[0]:,.2f}</p>
-                <p class="market-value">{current_year+2}: ${predicted_values[1]:,.2f}</p>
-                <p class="market-value">{current_year+3}: ${predicted_values[2]:,.2f}</p>
-            </div>
-        """, unsafe_allow_html=True)
+# Static avatar generation (using simple image URL pattern, can be improved)
+df['Image'] = df['Player Name'].apply(lambda name: f"https://robohash.org/{name.replace(' ', '')}.png?set=set2")
 
-# Display filtered player cards
-display_filtered_players(style_of_play, min_age, max_age, budget_range)
+# Add predicted values for each player
+df['Predicted_Market_Value'] = df['Market_Value'] * random.uniform(1.05, 1.3)  # Simulating future predicted values
+df['Transfer_Chance'] = df['Market_Value'].apply(lambda x: random.uniform(0.6, 0.9))  # Random transfer chance
+df['Best_Fit_Club'] = df['Club'].apply(lambda x: random.choice(['Barcelona', 'Manchester United', 'Paris Saint-Germain', 'Bayern Munich', 'Chelsea']))  # Random best-fit clubs
+
+# Market Value Prediction for the next three years
+growth_factor = 1.1  # 10% market value growth per year
+df['Predicted_Market_Value_Year_1'] = df['Predicted_Market_Value'] * growth_factor
+df['Predicted_Market_Value_Year_2'] = df['Predicted_Market_Value_Year_1'] * growth_factor
+df['Predicted_Market_Value_Year_3'] = df['Predicted_Market_Value_Year_2'] * growth_factor
+
+# Convert market value to SAR (for display in Saudi Arabia)
+df['Market_Value_SAR'] = df['Market_Value'] * 3.75
+df['Predicted_Market_Value_SAR'] = df['Predicted_Market_Value'] * 3.75
+df['Predicted_Market_Value_Year_1_SAR'] = df['Predicted_Market_Value_Year_1'] * 3.75
+df['Predicted_Market_Value_Year_2_SAR'] = df['Predicted_Market_Value_Year_2'] * 3.75
+df['Predicted_Market_Value_Year_3_SAR'] = df['Predicted_Market_Value_Year_3'] * 3.75
+
+# Displaying dashboard title and subtitle
+st.title("⚽ Football Player Analytics Dashboard")
+st.subheader("Explore player stats, predicted market values, transfer chances, and the best-fit clubs!")
+
+# Sidebar filters for position, age, and budget
+position_filter = st.sidebar.selectbox("Select Position", ['All'] + list(df['Position'].unique()))
+age_filter = st.sidebar.slider("Select Age Range", min_value=18, max_value=40, value=(18, 40))
+budget_filter = st.sidebar.slider("Select Budget (in SAR millions)", min_value=0, max_value=100, value=(0, 100))
+
+# Filter the dataframe based on the selected criteria
+filtered_df = df
+if position_filter != 'All':
+    filtered_df = filtered_df[filtered_df['Position'] == position_filter]
+
+filtered_df = filtered_df[(filtered_df['Age'] >= age_filter[0]) & (filtered_df['Age'] <= age_filter[1])]
+filtered_df = filtered_df[(filtered_df['Market_Value_SAR'] >= budget_filter[0] * 1e6) & (filtered_df['Market_Value_SAR'] <= budget_filter[1] * 1e6)]
+
+# Display the table
+st.write(f"Displaying players with the selected filters (Position: {position_filter}, Age Range: {age_filter}, Budget: {budget_filter[0]}M to {budget_filter[1]}M SAR):")
+st.write(filtered_df[['Player Name', 'Age', 'Nationality', 'Position', 'Club', 'Market_Value_SAR', 
+                      'Predicted_Market_Value_SAR', 'Predicted_Market_Value_Year_1_SAR', 'Predicted_Market_Value_Year_2_SAR', 
+                      'Predicted_Market_Value_Year_3_SAR', 'Transfer_Chance', 'Best_Fit_Club']])
+
+# Function to create player card with football icon
+def player_card(player_data):
+    card = f"""
+    <div style="padding: 10px; background-color: rgba(0, 0, 0, 0.6); margin: 10px; border-radius: 8px; color: white; display: flex; align-items: center;">
+        <img src="{player_data['Image']}" style="width: 60px; height: 60px; border-radius: 50%; margin-right: 15px;">
+        <div>
+            <h3>{player_data['Player Name']}</h3>
+            <p><strong>Club:</strong> {player_data['Club']}</p>
+            <p><strong>Position:</strong> {player_data['Position']}</p>
+            <p><strong>Predicted Market Value (SAR):</strong> {player_data['Predicted_Market_Value_SAR']:.2f} SAR</p>
+            <p><strong>Transfer Chance:</strong> {player_data['Transfer_Chance'] * 100:.1f}%</p>
+            <p><strong>Best Fit Club:</strong> {player_data['Best_Fit_Club']}</p>
+            <p><strong>Predicted Market Value in 1 Year:</strong> {player_data['Predicted_Market_Value_Year_1_SAR']:.2f} SAR</p>
+            <p><strong>Predicted Market Value in 2 Years:</strong> {player_data['Predicted_Market_Value_Year_2_SAR']:.2f} SAR</p>
+            <p><strong>Predicted Market Value in 3 Years:</strong> {player_data['Predicted_Market_Value_Year_3_SAR']:.2f} SAR</p>
+        </div>
+        <div style="margin-left: auto; display: flex; justify-content: center; align-items: center;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/Football_Icon.svg" style="width: 30px; height: 30px; margin-left: 10px;">
+        </div>
+    </div>
+    """
+    return card
+
+# Display player cards for filtered players
+for _, player in filtered_df.iterrows():
+    st.markdown(player_card(player), unsafe_allow_html=True)
+
+# Adding interactive graphs (Optional)
+x = df['Age']
+y = df['Market_Value']
+
+# Scatter plot for Market Value vs Age
+chart = alt.Chart(df).mark_circle(size=60).encode(
+    x=alt.X('Age', title='Age'),
+    y=alt.Y('Market_Value', title='Market Value (M)'),
+    color='Position',
+    tooltip=['Player Name', 'Market_Value', 'Position', 'Age']
+).interactive()
+
+st.altair_chart(chart, use_container_width=True)
