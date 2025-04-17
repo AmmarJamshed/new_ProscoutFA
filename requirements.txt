@@ -1,5 +1,7 @@
 streamlit
 pandas
 numpy
-scikit-learn
-matplotlib
+altair
+requests
+Pillow
+random
