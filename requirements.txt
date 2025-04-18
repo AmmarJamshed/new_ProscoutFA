@@ -1,7 +1,6 @@
 streamlit
 pandas
 numpy
-altair
 requests
-random
-pillow
+Pillow
+altair
